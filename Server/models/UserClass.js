@@ -1,4 +1,14 @@
-const { InvalidFirstNameError, InvalidLastNameError, InvalidEmailError, InvalidMembershipNumberError, InvalidUsernameError, InvalidEarnedBadgesError, InvalidRequiredBadgesError, InvalidPasswordError } = require("./UserService");
+const {
+    InvalidBadgesError,
+    InvalidFirstNameError,
+    InvalidLastNameError,
+    InvalidEmailError,
+    InvalidMembershipNumberError,
+    InvalidUsernameError,
+    InvalidEarnedBadgesError,
+    InvalidRequiredBadgesError,
+    InvalidPasswordError,
+} = require("./UserErrors");
 
 class User {
     constructor({
@@ -14,15 +24,15 @@ class User {
         username
     }) {
         this._id = _id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.membershipNumber = membershipNumber;
-        this.badges = badges;
-        this.earned_badges = earned_badges;
-        this.password = password;
-        this.required_badges = required_badges;
-        this.username = username;
+        this._firstName = firstName;
+        this._lastName = lastName;
+        this._email = email;
+        this._membershipNumber = membershipNumber;
+        this._badges = badges;
+        this._earned_badges = earned_badges;
+        this._password = password;
+        this._required_badges = required_badges;
+        this._username = username;
     }
 
     getFirstName() {
@@ -47,6 +57,10 @@ class User {
 
     getMembershipNumber() {
         return this._membershipNumber;
+    }
+
+    getBadges() {
+        return this._badges;
     }
 
     getEarnedBadges() {
@@ -85,7 +99,7 @@ class User {
             throw new InvalidEmailError();
         }
         this._email = email;
-    }    
+    }
 
     set membershipNumber(number) {
         if (!number || typeof number !== 'string') {
@@ -99,6 +113,13 @@ class User {
             throw new InvalidUsernameError();
         }
         this._username = username;
+    }
+
+    set badges(badges) {
+        if (!Array.isArray(badges)) {
+            throw new InvalidBadgesError();
+        }
+        this._badges = badges;
     }
 
     set earned_badges(badges) {
@@ -122,7 +143,7 @@ class User {
         }
         this._password = password;
     }
-    
+
 }
 
 module.exports = User;

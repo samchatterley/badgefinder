@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@greatsumini/react-facebook-login": "^3.3.3",
+    "@hapi/joi": "^17.1.1",
     "chai": "^4.3.7",
     "cors": "^2.8.5",
     "firebase": "^9.20.0",

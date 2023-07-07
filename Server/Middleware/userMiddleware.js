@@ -1,62 +1,37 @@
-const {
-  UserError,
-  UserNotFoundError,
-  BadgeNotFoundError,
-  AlreadyHasBadgeError,
-  DoesNotHaveBadgeError,
-  RequirementNotFoundError,
-  InvalidFirstNameError,
-  InvalidLastNameError,
-  InvalidEmailError,
-  InvalidMembershipNumberError,
-  InvalidUsernameError,
-  InvalidEarnedBadgesError,
-  InvalidRequiredBadgesError,
-  InvalidPasswordError,
-  DuplicateUsernameError
-} = require('../models/UserService');
-const logger = require('../../logger');
+const { logger } = require('../../logger');
 
-const userMiddleware = (err, req, res, next) => {
-  if (err instanceof UserNotFoundError) {
-      logger.error(err.stack);
-      res.status(404).json({
-          message: err.message
-      });
-  } else if (err instanceof BadgeNotFoundError || err instanceof RequirementNotFoundError) {
-      logger.error(err.stack);
-      res.status(404).json({
-          message: err.message
-      });
-  } else if (err instanceof AlreadyHasBadgeError || err instanceof DoesNotHaveBadgeError) {
-      logger.error(err.stack);
-      res.status(400).json({
-          message: err.message
-      });
-  } else if (err instanceof InvalidFirstNameError ||
-             err instanceof InvalidLastNameError ||
-             err instanceof InvalidEmailError ||
-             err instanceof InvalidMembershipNumberError ||
-             err instanceof InvalidUsernameError ||
-             err instanceof InvalidEarnedBadgesError ||
-             err instanceof InvalidRequiredBadgesError ||
-             err instanceof InvalidPasswordError ||
-             err instanceof DuplicateUsernameError) {
-      logger.error(err.stack);
-      res.status(400).json({
-          message: err.message
-      });
-  } else if (err instanceof UserError) {
-      logger.error(err.stack);
-      res.status(400).json({
-          message: err.message
-      });
-  } else {
-      logger.error(err.stack);
-      res.status(500).json({
-          message: "Internal server error"
-      });
-  }
+const errorTypeMapping = {
+    UserService: 500,
+    UserNotFoundError: 404,
+    BadgeNotFoundError: 404,
+    AlreadyHasBadgeError: 400,
+    DoesNotHaveBadgeError: 400,
+    RequirementNotFoundError: 404,
+    InvalidFirstNameError: 400,
+    InvalidLastNameError: 400,
+    InvalidEmailError: 400,
+    InvalidMembershipNumberError: 400,
+    InvalidUsernameError: 400,
+    InvalidEarnedBadgesError: 400,
+    InvalidRequiredBadgesError: 400,
+    InvalidPasswordError: 400,
+    DuplicateUsernameError: 409,
+    default: 500,
 };
 
-module.exports = userMiddleware;
+const userMiddleware = (req, res, next) => {
+    logger.info('In User Middleware');
+    next();
+};
+
+const errorHandlingMiddleware = (err, req, res, next) => {
+    const status = errorTypeMapping[err.name] || errorTypeMapping.default;
+    res.status(status).json({
+        message: err.message,
+    });
+};
+
+module.exports = [
+    userMiddleware,
+    errorHandlingMiddleware
+];

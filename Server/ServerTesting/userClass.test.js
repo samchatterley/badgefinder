@@ -1,5 +1,12 @@
 const User = require('../models/UserClass');
 const {
+    UserError,
+    UserNotFoundError,
+    BadgeNotFoundError,
+    AlreadyHasBadgeError,
+    DoesNotHaveBadgeError,
+    RequirementNotFoundError,
+    InvalidBadgesError,
     InvalidFirstNameError,
     InvalidLastNameError,
     InvalidEmailError,
@@ -8,7 +15,8 @@ const {
     InvalidEarnedBadgesError,
     InvalidRequiredBadgesError,
     InvalidPasswordError,
-} = require("../models/UserService");
+    DuplicateUsernameError
+} = require("../models/UserErrors");
 
 
 describe('Testing User Class Getters and Setters as well as error states', () => {
@@ -53,6 +61,10 @@ describe('Testing User Class Getters and Setters as well as error states', () =>
         expect(user.getMembershipNumber()).toEqual('5678');
     });
 
+    it('Should get the badges of the user', () => {
+        expect(user.getBadges()).toEqual([]);
+    });
+
     it('Should get the earned badges of the user', () => {
         expect(user.getEarnedBadges()).toEqual([]);
     });
@@ -93,6 +105,12 @@ describe('Testing User Class Getters and Setters as well as error states', () =>
         expect(() => {
             user.username = '';
         }).toThrow(InvalidUsernameError);
+    });
+
+    it('should throw an error when setting an invalid badge', () => {
+        expect(() => {
+            user.badges = 'invalid';
+        }).toThrow(InvalidBadgesError);
     });
 
     it('Should throw an error when setting an invalid earned_badges', () => {

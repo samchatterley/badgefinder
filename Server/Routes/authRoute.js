@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/users");
+const { UserService } = require("../models/UserService");
+const UserClass = require("../models/UserClass")
 const asyncHandler = require("express-async-handler");
 const {
     body,
@@ -12,7 +13,9 @@ const {
     logger
 } = require('../../logger');
 
-module.exports = (userInstance) => {
+const userService = new UserService(new UserClass());
+
+module.exports = () => {
 
     router.post("/signup", asyncHandler(async (req, res) => {
         logger.info("Signup request received");
@@ -33,7 +36,7 @@ module.exports = (userInstance) => {
             });
         }
 
-        const existingUser = await userInstance.findOne({
+        const existingUser = await userService.findOne({
             email: req.body.email
         });
         if (existingUser) {
@@ -43,7 +46,7 @@ module.exports = (userInstance) => {
             });
         }
 
-        const newUser = await userInstance.registerUser(req.body);
+        const newUser = await userService.registerUser(req.body);
         if (!newUser) {
             logger.info("An error occurred while creating the user");
             return res.status(500).json({
@@ -68,7 +71,7 @@ module.exports = (userInstance) => {
             });
         }
 
-        const user = await userInstance.findById(req.body._id);
+        const user = await userService.findById(req.body._id);
         if (!user) {
             logger.info("User with this id does not exist");
             return res.status(404).json({
@@ -99,7 +102,7 @@ module.exports = (userInstance) => {
             }
         }).toArray();
 
-        const updatedUser = await userInstance.registerSecondaryUser({
+        const updatedUser = await userService.registerSecondaryUser({
             _id: user._id,
             username: req.body.username,
             password: req.body.password,
@@ -139,7 +142,7 @@ module.exports = (userInstance) => {
                 });
             }
 
-            const user = await userInstance.findOne({
+            const user = await userService.findOne({
                 username: req.body.username
             });
             if (!user) {
@@ -160,7 +163,7 @@ module.exports = (userInstance) => {
             }
 
             logger.info("About to update user's last login time");
-            const updatedUserResult = await userInstance.findOneAndUpdate({
+            const updatedUserResult = await userService.findOneAndUpdate({
                 username: req.body.username
             }, {
                 lastLogin: new Date()
@@ -208,7 +211,7 @@ module.exports = (userInstance) => {
         "/user/:userId",
         asyncHandler(async (req, res) => {
             logger.info("Get user request received");
-            const user = await userInstance.findById(req.params.userId);
+            const user = await userService.findById(req.params.userId);
 
             if (!user) {
                 logger.info("User not found");
