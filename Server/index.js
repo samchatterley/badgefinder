@@ -29,18 +29,14 @@ if (process.env.NODE_ENV !== 'production') {
     }));
 }
 
+const authRoutes = require('./Routes/authRoute');
+const userRoutes = require('./Routes/userRoute');
 const badgesRouter = require('./Routes/all_badges');
 const requirementsRouter = require('./Routes/requirements_by_id');
 const badgeByRequirementRouter = require('./Routes/badge_by_requirement');
 const badgeByNameRouter = require('./Routes/badge_by_name');
 const badgeByCategoryRouter = require('./Routes/badge_by_categories');
-const authRoutes = require('./Routes/authRoute');
-const userRoutes = require('./Routes/userRoute');
-const {
-    requireAuth
-} = require('./Middleware/authMiddleware');
-
-const UserClass = require("./models/users");
+const { UserService } = require("./models/UserService");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -52,23 +48,15 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: false
+        secure: process.env.NODE_ENV === 'production'
     }
 }));
 
-app.use(morgan('combined', {
-    stream: {
-        write: message => logger.info(message.trim())
-    }
-}));
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) }}));
 
-const uri = 'mongodb+srv://samchatterley:ry1xAwS20Pvnmuq6@atlascluster.thbkv6n.mongodb.net/?retryWrites=true&w=majority';
-
-const client = new MongoClient(uri, {
-    useUnifiedTopology: true,
-});
-
-let User;
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri, { useUnifiedTopology: true });
+let userService;
 
 async function connectDB() {
     try {
@@ -77,16 +65,15 @@ async function connectDB() {
             ping: 1
         });
         logger.info('Ping successful. Connected to BadgeFinder database.');
-        User = new UserClass(client);
-        logger.info(User);
+        userService = new UserService(client);
         app.use(async (req, res, next) => {
             req.client = client;
-            req.User = User;
+            req.userService = userService;
             next();
         });
 
-        app.use('/auth', authRoutes(User));
-        app.use('/user', userRoutes(User));
+        app.use('/auth', authRoutes(userService));
+        app.use('/user', userRoutes(userService));
         app.use('/badges', badgesRouter);
         app.use('/requirements', requirementsRouter);
         app.use('/badges/requirements', badgeByRequirementRouter);
@@ -95,7 +82,7 @@ async function connectDB() {
 
         app.use((err, req, res, next) => {
             logger.error(err.stack);
-            res.status(500).send('Something broke!');
+            res.status(500).send(process.env.NODE_ENV === 'production' ? 'Something broke!' : err.message);
         });
 
         app.listen(port, () => {

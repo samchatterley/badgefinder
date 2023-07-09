@@ -10,11 +10,15 @@ const session = require('express-session');
 const morgan = require('morgan');
 const Joi = require('joi');
 
+jest.mock('../models/UserService');
+
 describe('Testing User Service Methods', () => {
   let userService;
   let mongoClient;
   let mongoServer;
   let mockUser;
+  let mockBadge;
+  let mockBadgeRequirement;
   let request;
   let app;
 
@@ -25,11 +29,11 @@ describe('Testing User Service Methods', () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-
+  
     await mongoClient.connect();
-
+  
     userService = new UserService(mongoClient);
-    
+
     app = express();
     app.use(cors());
     app.use(express.json());
@@ -58,8 +62,8 @@ describe('Testing User Service Methods', () => {
       next();
     });
 
-    const authRoutes = require('../Routes/authRoute')(userService);
-    const userRoutes = require('../Routes/userRoute')(userService);
+    const authRoutes = require('../Routes/authRoute')(User);
+    const userRoutes = require('../Routes/userRoute')(User);
     app.use('/auth', authRoutes);
     app.use('/user', userRoutes);
 
@@ -71,7 +75,7 @@ describe('Testing User Service Methods', () => {
     request = () => supertest(app);
 
     mockUser = {
-      _id: 'someId648389201c543856ee90d66',
+      _id: '648389201c543856ee90d66',
       firstName: 'Sam',
       lastName: 'Chatterley',
       email: 'sam@badgefinder.co.uk',
@@ -97,22 +101,6 @@ describe('Testing User Service Methods', () => {
       badge_id: 1,
       requirement_string: "The use of computers in campsite management"
     };
-
-    User.findUserByQuery = jest.fn(() => Promise.resolve(mockUser));
-    User.findOne = jest.fn(() => Promise.resolve(mockUser));
-    User.findById = jest.fn(() => Promise.resolve(mockUser));
-    User.findByEmail = jest.fn(() => Promise.resolve(mockUser));
-    User.create = jest.fn(() => Promise.resolve(mockUser._id));
-    User.update = jest.fn(() => Promise.resolve({ firstName: 'Jane' }));
-    User.findOneAndUpdate = jest.fn(() => Promise.resolve(mockUser));
-    User.deleteById = jest.fn(() => Promise.resolve({ deletedCount: 1 }));
-    User.findOneAndUpdateWithOperations = jest.fn(() => Promise.resolve(mockUser));
-    User.registerUser = jest.fn(() => Promise.resolve(mockUser));
-    User.registerSecondaryUser = jest.fn(() => Promise.resolve(mockUser));
-    User.authenticateUser = jest.fn(() => Promise.resolve(mockUser));
-    User.addBadge = jest.fn(() => Promise.resolve(mockUser));
-    User.removeBadge = jest.fn(() => Promise.resolve(mockUser));
-    User.updateBadgeRequirement = jest.fn(() => Promise.resolve(mockUser));
   });
 
   afterEach(() => {
@@ -121,6 +109,22 @@ describe('Testing User Service Methods', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    jest.spyOn(userService, 'findUserByQuery').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'findOne').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'findById').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'findByEmail').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'create').mockImplementation(() => Promise.resolve(mockUser._id));
+    jest.spyOn(userService, 'update').mockImplementation(() => Promise.resolve({ firstName: 'Jane' }));
+    jest.spyOn(userService, 'findOneAndUpdate').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'deleteById').mockImplementation(() => Promise.resolve({ deletedCount: 1 }));
+    jest.spyOn(userService, 'findOneAndUpdateWithOperations').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'registerUser').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'registerSecondaryUser').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'authenticateUser').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'addBadge').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'removeBadge').mockImplementation(() => Promise.resolve(mockUser));
+    jest.spyOn(userService, 'updateBadgeRequirement').mockImplementation(() => Promise.resolve(mockUser));
   });
 
   afterAll(async () => {

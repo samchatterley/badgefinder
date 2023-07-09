@@ -1,13 +1,13 @@
 const { ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
-const User = require('./UserClass');
 const logger = require('../../logger');
 const ValidationSchemas = require('./ValidationSchema');
 const UserErrors = require('./UserErrors');
 
 class UserService {
-    constructor(client) {
+    constructor(client, UserClassReference) {
         this.client = client;
+        this.UserClass = UserClassReference;
         this.usersDb = client.db("BadgeFinderUsers");
         this.badgesDb = client.db("BadgeFinder");
         this.usersCollection = this.usersDb.collection("Users");
@@ -16,7 +16,7 @@ class UserService {
     }
 
     createUserObject(user) {
-        return new User({
+        return new this.UserClass({
             _id: user._id,
             firstName: user.firstName,
             lastName: user.lastName,

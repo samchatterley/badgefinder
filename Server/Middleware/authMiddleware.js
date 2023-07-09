@@ -1,48 +1,46 @@
-require ('dotenv').config();
-const User = require('../models/UserClass');
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../config");
-const logger = require('../../logger');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = process.env;
+const UserErrors = require('../models/UserErrors');
+
+const checkAuth = (req, res, next) => {
+  const token = req.cookies.jwt;
+
+  if (token) {
+    try {
+      const decodedToken = jwt.verify(token, JWT_SECRET);
+      req.user = decodedToken;
+    } catch (err) {
+    }
+  }
+
+  next();
+};
 
 const requireAuth = (req, res, next) => {
-  const token = req.cookies.jwt;
-
-  if (token) {
-    jwt.verify(token, JWT_SECRET, (err, decodedToken) => {
-      if (err) {
-        logger.info(err.message);
-        res.status(401).json({ error: 'Unauthorized' });
-      } else {
-        logger.info(decodedToken);
-        next();
-      }
+  if (!req.user) {
+    return res.status(401).json({
+      message: 'Not authenticated'
     });
-  } else {
-    res.status(401).json({ error: 'Unauthorized' });
   }
+
+  next();
 };
 
-const setCurrentUser = (req, res, next) => {
-  const User = req.User;
-  const token = req.cookies.jwt;
-  logger.info("Received GET request for user with id:", userId);
-  if (token) {
-    jwt.verify(token, JWT_SECRET, async (err, decodedToken) => {
-      if (err) {
-        logger.info(err.message);
-        res.locals.user = null;
-        next();
-      } else {
-        logger.info(decodedToken);
-        const user = await User.findById(decodedToken.id);
-        res.locals.user = user;
-        next();
-      }
-    });
-  } else {
-    res.locals.user = null;
-    next();
+const setCurrentUser = async (req, res, next) => {
+  if (req.user) {
+    try {
+      const user = await req.userService.findById(req.user.id);
+      if (!user) throw new UserErrors.UserNotFoundError(`User with id ${req.user.id} not found`);
+      
+      req.user = user;
+    } catch (err) {
+      return res.status(500).json({
+        message: 'An error occurred while fetching the user data'
+      });
+    }
   }
+
+  next();
 };
 
-module.exports = { requireAuth, setCurrentUser };
+module.exports = { checkAuth, requireAuth, setCurrentUser };

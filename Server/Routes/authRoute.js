@@ -1,25 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const { UserService } = require("../models/UserService");
-const UserClass = require("../models/UserClass")
 const asyncHandler = require("express-async-handler");
-const {
-    body,
-    validationResult
-} = require("express-validator");
+const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const {
-    logger
-} = require('../../logger');
+const { logger } = require('../../logger');
+const { checkAuth, requireAuth, setCurrentUser } = require('../Middleware/authMiddleware');
 
-const userService = new UserService(new UserClass());
-
-module.exports = () => {
+module.exports = (User) => {
+    const userService = User;
+    router.use(checkAuth, setCurrentUser);
 
     router.post("/signup", asyncHandler(async (req, res) => {
         logger.info("Signup request received");
-        logger.info(req.body);
 
         if (!req.body.firstName || !req.body.lastName || !req.body.email || !req.body.membershipNumber) {
             logger.info("Signup request missing necessary fields");
@@ -89,7 +82,7 @@ module.exports = () => {
         const earnedBadges = req.body.earnedBadges || [];
         const requiredBadges = req.body.requiredBadges || [];
 
-        const badgesCollection = req.client.db("yourDatabaseName").collection("Badges");
+        const badgesCollection = client.db("yourDatabaseName").collection("Badges");
 
         user.earned_badges = await badgesCollection.find({
             badge_id: {
@@ -152,8 +145,6 @@ module.exports = () => {
                 });
             }
 
-            logger.info("Found user:", user);
-
             const match = await bcrypt.compare(req.body.password, user.password);
             if (!match) {
                 logger.info("Invalid username or password");
@@ -162,7 +153,6 @@ module.exports = () => {
                 });
             }
 
-            logger.info("About to update user's last login time");
             const updatedUserResult = await userService.findOneAndUpdate({
                 username: req.body.username
             }, {
@@ -170,8 +160,6 @@ module.exports = () => {
             }, {
                 returnOriginal: false
             });
-
-            logger.info("findOneAndUpdate result:", updatedUserResult);
 
             if (!updatedUserResult) {
                 logger.info("Failed to update user's last login time");
@@ -181,10 +169,6 @@ module.exports = () => {
             }
 
             const updatedUser = updatedUserResult;
-
-            logger.info("Updated user:", updatedUser);
-
-            logger.info("About to sign JWT");
 
             const token = jwt.sign({
                     userId: updatedUser.value._id.toString(),
@@ -207,9 +191,7 @@ module.exports = () => {
         })
     );
 
-    router.get(
-        "/user/:userId",
-        asyncHandler(async (req, res) => {
+    router.get('/user/:userId', requireAuth, asyncHandler(async (req, res) => {
             logger.info("Get user request received");
             const user = await userService.findById(req.params.userId);
 
