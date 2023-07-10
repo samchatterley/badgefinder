@@ -15,8 +15,7 @@ const limiter = rateLimit({
 
 module.exports = (User) => {
     const userService = User;
-    router.use(checkAuth, setCurrentUser);
-    router.use(limiter); 
+    router.use(checkAuth, setCurrentUser, limiter);
 
     router.post("/signup", asyncHandler(async (req, res) => {
         logger.info("Signup request received");
