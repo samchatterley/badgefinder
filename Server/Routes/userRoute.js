@@ -4,10 +4,17 @@ const { ObjectId } = require('mongodb');
 const { logger } = require('../../logger');
 const { logRequestStart, authenticate, errorHandlingMiddleware } = require('../Middleware/userMiddleware');
 const UserErrors = require('../models/UserErrors');
+const rateLimit = require("express-rate-limit"); // Import the package
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100 
+});
 
 module.exports = (userInstance) => {
     const router = express.Router();
     router.use(logRequestStart);
+    router.use(limiter); 
 
     router.get("/:id", authenticate, asyncHandler(async (req, res, next) => {
         const userId = req.params.id;

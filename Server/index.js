@@ -5,6 +5,7 @@ const { MongoClient } = require('mongodb');
 const session = require('express-session');
 const morgan = require('morgan');
 const winston = require('winston');
+const csurf = require('csurf');
 
 const logger = winston.createLogger({
     level: 'info',
@@ -41,17 +42,21 @@ const { UserService } = require("./models/UserService");
 const app = express();
 const port = process.env.PORT || 5000;
 
+if (!process.env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET environment variable is not set");
+}
+
 app.use(cors());
 app.use(express.json());
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your secret key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
         secure: process.env.NODE_ENV === 'production'
     }
 }));
-
+app.use(csurf());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) }}));
 
 const uri = process.env.MONGODB_URI;
