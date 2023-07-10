@@ -43,7 +43,7 @@ module.exports = (userInstance) => {
         try {
             logger.info("Received DELETE request for user with id:", userId);
             const user = await userInstance.findById(new ObjectId(userId));
-            if (!user || !user.earned_badges.find(badge => badge.badge_id === badgeId)) {
+            if (!user?.earned_badges.find(badge => badge.badge_id === badgeId)) {
                 throw new UserErrors.DoesNotHaveBadgeError("User does not have the badge");
             }
             const updatedUser = await userInstance.removeBadge(new ObjectId(userId), new ObjectId(badgeId));

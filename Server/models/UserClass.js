@@ -137,12 +137,13 @@ class User {
     }
 
     set password(password) {
-        const passwordRegex = /^(?=.*[0-9])/;
+        const passwordRegex = /^(?=.*\d)/;
         if (!password || typeof password !== 'string' || password.length < 8 || !passwordRegex.test(password)) {
             throw new InvalidPasswordError();
         }
         this._password = password;
     }
+    
 
 }
 

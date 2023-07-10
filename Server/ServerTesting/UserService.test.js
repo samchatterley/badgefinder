@@ -19,7 +19,6 @@ describe('Testing User Service Methods', () => {
   let mockUser;
   let mockBadge;
   let mockBadgeRequirement;
-  let request;
   let app;
 
   beforeAll(async () => {
@@ -71,8 +70,6 @@ describe('Testing User Service Methods', () => {
       logger.error(err.stack);
       res.status(500).send('Something broke!');
     });
-
-    request = () => supertest(app);
 
     mockUser = {
       _id: '648389201c543856ee90d66',
