@@ -4,7 +4,7 @@ const { ObjectId } = require('mongodb');
 const { logger } = require('../../logger');
 const { logRequestStart, authenticate, errorHandlingMiddleware } = require('../Middleware/userMiddleware');
 const UserErrors = require('../models/UserErrors');
-const rateLimit = require("express-rate-limit"); // Import the package
+const rateLimit = require("express-rate-limit"); 
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 

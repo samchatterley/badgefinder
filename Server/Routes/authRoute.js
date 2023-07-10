@@ -6,10 +6,17 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { logger } = require('../../logger');
 const { checkAuth, requireAuth, setCurrentUser } = require('../Middleware/authMiddleware');
+const rateLimit = require("express-rate-limit"); 
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 100 
+  });
 
 module.exports = (User) => {
     const userService = User;
     router.use(checkAuth, setCurrentUser);
+    router.use(limiter); 
 
     router.post("/signup", asyncHandler(async (req, res) => {
         logger.info("Signup request received");
