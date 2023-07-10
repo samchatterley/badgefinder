@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const supertest = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server-global');
@@ -33,19 +34,19 @@ describe('Testing User Service Methods', () => {
   
     userService = new UserService(mongoClient);
 
-    app = express();
     app.use(cors());
     app.use(express.json());
-    app.use(
-      session({
-        secret: 'test_secret',
+    app.use(session({
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
         cookie: {
-          secure: false,
-        },
-      })
-    );
+            secure: process.env.NODE_ENV === 'production'
+        }
+    }));
+
+    app.use(csurf());
+    app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) }}));
 
     app.use(
       morgan('combined', {

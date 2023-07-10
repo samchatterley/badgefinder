@@ -1,6 +1,11 @@
-const User = require('../models/users');
+require('dotenv').config();
+const User = require('../models/UserService');
 const jwt = require('jsonwebtoken');
 const {logger} = require('../../logger');
+
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is not set");
+}
 
 const handleErrors = (err) => {
   logger.error(err.message, err.code);
@@ -30,7 +35,7 @@ const handleErrors = (err) => {
 
 const maxAge = 3 * 24 * 60 * 60; // 3 days in seconds
 const createToken = (id) => {
-  return jwt.sign({ id }, 'your secret', {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: maxAge
   });
 }
