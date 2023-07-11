@@ -14,8 +14,6 @@ const morgan = require('morgan');
 const Joi = require('joi');
 const csurf = require('csurf')
 
-
-
 describe('Testing User Service Methods', () => {
   let userService;
   let mongoClient;

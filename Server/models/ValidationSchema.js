@@ -1,5 +1,6 @@
 const Joi = require('@hapi/joi');
 const {
+  BadgeNotFoundError,
   InvalidFirstNameError,
   InvalidLastNameError,
   InvalidEmailError,
@@ -9,6 +10,7 @@ const {
   InvalidRequiredBadgesError,
   InvalidPasswordError,
   UserNotFoundError,
+  RequirementNotFoundError,
 } = require('./UserErrors');
 
 exports.findOneSchema = Joi.object({
@@ -17,14 +19,14 @@ exports.findOneSchema = Joi.object({
     lastName: Joi.string().required().error(() => new InvalidLastNameError()),
     email: Joi.string().email().required().error(() => new InvalidEmailError()),
     membershipNumber: Joi.string().required().error(() => new InvalidMembershipNumberError()),
-    badges: Joi.array().items(Joi.string()),
+    badges: Joi.array().items(Joi.string().error(() => new BadgeNotFoundError())),
     earned_badges: Joi.array().required().error(() => new InvalidEarnedBadgesError()),
     required_badges: Joi.array().required().error(() => new InvalidRequiredBadgesError()),
     username: Joi.string().required().error(() => new InvalidUsernameError()),
 }).unknown(true);
 
 exports.findByIdSchema = Joi.object({
-    _id: Joi.string().length(24).regex(/^[0-9a-fA-F]{24}$/).required().error(UserNotFoundError),
+    _id: Joi.string().length(24).regex(/^[0-9a-fA-F]{24}$/).required().error(new UserNotFoundError),
   });
 
 exports.findByEmailSchema = Joi.object({
@@ -44,7 +46,7 @@ exports.updateSchema = Joi.object({
     lastName: Joi.string().error(() => new InvalidLastNameError()),
     email: Joi.string().email().error(() => new InvalidEmailError()),
     membershipNumber: Joi.string().error(() => new InvalidMembershipNumberError()),
-    badges: Joi.array().items(Joi.string()),
+    badges: Joi.array().items(Joi.string().error(() => new BadgeNotFoundError())),
     earned_badges: Joi.array().items(Joi.string()).error(() => new InvalidEarnedBadgesError()),
     required_badges: Joi.array().items(Joi.string()).error(() => new InvalidRequiredBadgesError()),
     username: Joi.string().error(() => new InvalidUsernameError()),
@@ -56,7 +58,7 @@ exports.findOneAndUpdateSchema = Joi.object({
     lastName: Joi.string().error(() => new InvalidLastNameError()),
     email: Joi.string().email().error(() => new InvalidEmailError()),
     membershipNumber: Joi.string().error(() => new InvalidMembershipNumberError()),
-    badges: Joi.array().items(Joi.string()),
+    badges: Joi.array().items(Joi.string().error(() => new BadgeNotFoundError())),
     earned_badges: Joi.array().items(Joi.string()).error(() => new InvalidEarnedBadgesError()),
     required_badges: Joi.array().items(Joi.string()).error(() => new InvalidRequiredBadgesError()),
     username: Joi.string().error(() => new InvalidUsernameError()),
@@ -98,18 +100,18 @@ exports.registerUserSchema = Joi.object({
   });
   
   exports.addBadgeSchema = Joi.object({
-    userId: Joi.string().required(),
-    badgeId: Joi.string().required(),
-  });
-  
-  exports.removeBadgeSchema = Joi.object({
-    userId: Joi.string().required(),
-    badgeId: Joi.string().required(),
-  });
-  
-  exports.updateBadgeRequirementSchema = Joi.object({
-    userId: Joi.string().required(),
-    badgeId: Joi.string().required(),
-    requirementId: Joi.string().required(),
+    userId: Joi.string().length(24).required().error(new BadgeNotFoundError()),
+    badgeId: Joi.string().length(24).required().error(new BadgeNotFoundError()),
+});
+
+exports.removeBadgeSchema = Joi.object({
+    userId: Joi.string().length(24).required().error(new BadgeNotFoundError()),
+    badgeId: Joi.string().length(24).required().error(new BadgeNotFoundError()),
+});
+
+exports.updateBadgeRequirementSchema = Joi.object({
+    userId: Joi.string().length(24).required().error(new BadgeNotFoundError()),
+    badgeId: Joi.string().length(24).required().error(new BadgeNotFoundError()),
+    requirementId: Joi.string().length(24).required().error(new RequirementNotFoundError()),
     completed: Joi.boolean().required(),
-  });
+});
