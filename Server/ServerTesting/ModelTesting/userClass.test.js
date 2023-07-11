@@ -1,4 +1,4 @@
-const User = require('../models/UserClass');
+const User = require('../../models/UserClass');
 const {
     UserError,
     UserNotFoundError,
@@ -16,7 +16,7 @@ const {
     InvalidRequiredBadgesError,
     InvalidPasswordError,
     DuplicateUsernameError
-} = require("../models/UserErrors");
+} = require("../../models/UserErrors");
 
 
 describe('Testing User Class Getters and Setters as well as error states', () => {

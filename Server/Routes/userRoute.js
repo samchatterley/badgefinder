@@ -109,3 +109,5 @@ module.exports = (userInstance) => {
 
     return router;
 };
+
+module.exports = router;
