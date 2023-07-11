@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const logger = require('../../logger');
 const ValidationSchemas = require('./ValidationSchema');
 const UserErrors = require('./UserErrors');
+const UserClass = require('./UserClass')
 
 class UserService {
     constructor(client, UserClassReference) {
